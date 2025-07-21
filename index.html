@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stylish To Do List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #a1c4fd, #c2e9fb);
+      margin: 0;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px #fff;
+    }
+
+    input[type="text"], input[type="date"] {
+      padding: 12px;
+      width: 250px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus, input[type="date"]:focus {
+      outline: none;
+      transform: scale(1.05);
+    }
+
+    button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      transform: scale(1.05);
+    }
+
+    #ans {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .task-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease;
+      cursor: move;
+    }
+
+    .task-card h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #34495e;
+      word-break: break-word;
+    }
+
+    #quote {
+      font-family: "Caveat", cursive;
+      font-weight: bold;
+      margin-top: 20px;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    .remove-btn {
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .remove-btn:hover {
+      background-color: #c0392b;
+    }
+
+    body.dark-mode {
+     background-image: url(./day2/bck.jpg);
+      color: #f1f1f1;
+    }
+
+    body.dark-mode .task-card {
+      background-color: #333;
+      color: white;
+    }
+
+    body.dark-mode h1,
+    body.dark-mode #quote {
+      color: #f1f1f1;
+    }
+
+    body.dark-mode input,
+    body.dark-mode button {
+      background-color: #333;
+      color: #fff;
+    }
+    .logo {
+  width: 30px;
+  vertical-align: middle;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+  </style>
+</head>
+<body>
+  <h1> <img src="./day2/OIP.jpg" alt="logo" class="logo"> Stylish To Do List</h1>
+
+  <div>
+    <input type="text" placeholder="Enter a task..." id="inp">
+    <input type="date" id="due">
+    <button onclick="addTask()">Add</button>
+  </div>
+  <div id="ans"></div>
+  <div id="quote"></div>
+  <button id="toggleThemeBtn">Switch to Dark Mode</button>
+
+  <script>
+    let arr = [];
+    let draggedIndex = null;
+
+    const toggleBtn = document.getElementById("toggleThemeBtn");
+
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-mode");
+      toggleBtn.textContent = "Switch to Light Mode";
+    }
+
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      const mode = document.body.classList.contains("dark-mode") ? "dark" : "light";
+      toggleBtn.textContent = mode === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode";
+      localStorage.setItem("theme", mode);
+    });
+
+    document.getElementById("inp").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") addTask();
+    });
+
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Delete" && arr.length > 0) {
+        arr.pop();
+        renderTasks();
+      }
+    });
+
+    const quotes = [
+      "Start where you are. Use what you have. Do what you can.",
+      "Push yourself, because no one else is going to do it for you.",
+      "Small steps every day lead to big results.",
+      "Don't watch the clock; do what it does. Keep going.",
+      "Your future is created by what you do today, not tomorrow."
+    ];
+
+    function showQuote() {
+      const quoteElement = document.getElementById("quote");
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      quoteElement.innerText = quotes[randomIndex];
+    }
+
+    function addTask() {
+      const taskText = document.getElementById('inp').value.trim();
+      const dueDate = document.getElementById('due').value;
+      if (!taskText) return alert("Please enter a task.");
+
+      arr.push({ text: taskText, duedate: dueDate });
+      document.getElementById('inp').value = "";
+      document.getElementById('due').value = "";
+      renderTasks();
+    }
+
+    function renderTasks() {
+      let res = "";
+      for (let i = 0; i < arr.length; i++) {
+        res += `
+          <div class="task-card" draggable="true" ondragstart="dragStart(event, ${i})" ondragover="dragOver(event)" ondrop="drop(event, ${i})">
+            <div style="flex-grow:1;">
+              <h2>${arr[i].text}</h2>
+              <p>Due: ${arr[i].duedate}</p>
+            </div>
+            <div>
+              <button onclick="editTask(${i})">✏️</button>
+              <button class="remove-btn" onclick="removeTask(${i})">Remove</button>
+            </div>
+          </div>`;
+      }
+      document.getElementById('ans').innerHTML = res;
+    }
+
+    function removeTask(index) {
+      arr.splice(index, 1);
+      renderTasks();
+    }
+
+    function editTask(index) {
+      const updatedText = prompt("Edit your task:", arr[index].text);
+      if (updatedText !== null && updatedText.trim() !== "") {
+        arr[index].text = updatedText.trim();
+        renderTasks();
+      }
+    }
+
+    function dragStart(e, index) {
+      draggedIndex = index;
+    }
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e, dropIndex) {
+      const draggedItem = arr[draggedIndex];
+      arr.splice(draggedIndex, 1);
+      arr.splice(dropIndex, 0, draggedItem);
+      renderTasks();
+    }
+
+    showQuote();
+  </script>
+</body>
+</html>
